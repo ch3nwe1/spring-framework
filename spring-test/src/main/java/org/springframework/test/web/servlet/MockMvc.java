@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,10 @@
 
 package org.springframework.test.web.servlet;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
@@ -77,6 +79,9 @@ public final class MockMvc {
 	@Nullable
 	private RequestBuilder defaultRequestBuilder;
 
+	@Nullable
+	private Charset defaultResponseCharacterEncoding;
+
 	private List<ResultMatcher> defaultResultMatchers = new ArrayList<>();
 
 	private List<ResultHandler> defaultResultHandlers = new ArrayList<>();
@@ -103,6 +108,14 @@ public final class MockMvc {
 	 */
 	void setDefaultRequest(@Nullable RequestBuilder requestBuilder) {
 		this.defaultRequestBuilder = requestBuilder;
+	}
+
+	/**
+	 * The default character encoding to be applied to every response.
+	 * @see org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder#defaultResponseCharacterEncoding(Charset)
+	 */
+	void setDefaultResponseCharacterEncoding(@Nullable Charset defaultResponseCharacterEncoding) {
+		this.defaultResponseCharacterEncoding = defaultResponseCharacterEncoding;
 	}
 
 	/**
@@ -168,11 +181,15 @@ public final class MockMvc {
 			servletResponse = mockResponse;
 		}
 
+		if (this.defaultResponseCharacterEncoding != null) {
+			mockResponse.setDefaultCharacterEncoding(this.defaultResponseCharacterEncoding.name());
+		}
+
 		if (requestBuilder instanceof SmartRequestBuilder) {
 			request = ((SmartRequestBuilder) requestBuilder).postProcessRequest(request);
 		}
 
-		final MvcResult mvcResult = new DefaultMvcResult(request, mockResponse);
+		MvcResult mvcResult = new DefaultMvcResult(request, mockResponse);
 		request.setAttribute(MVC_RESULT_ATTRIBUTE, mvcResult);
 
 		RequestAttributes previousAttributes = RequestContextHolder.getRequestAttributes();
@@ -216,11 +233,11 @@ public final class MockMvc {
 	}
 
 	private void applyDefaultResultActions(MvcResult mvcResult) throws Exception {
-		for (ResultMatcher matcher : this.defaultResultMatchers) {
-			matcher.match(mvcResult);
-		}
 		for (ResultHandler handler : this.defaultResultHandlers) {
 			handler.handle(mvcResult);
+		}
+		for (ResultMatcher matcher : this.defaultResultMatchers) {
+			matcher.match(mvcResult);
 		}
 	}
 

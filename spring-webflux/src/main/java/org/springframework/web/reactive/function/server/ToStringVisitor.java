@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@
 
 package org.springframework.web.reactive.function.server;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -23,7 +24,6 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
-import org.springframework.lang.Nullable;
 
 /**
  * Implementation of {@link RouterFunctions.Visitor} that creates a formatted
@@ -37,9 +37,6 @@ class ToStringVisitor implements RouterFunctions.Visitor, RequestPredicates.Visi
 	private final StringBuilder builder = new StringBuilder();
 
 	private int indent = 0;
-
-	@Nullable
-	private String infix;
 
 
 	// RouterFunctions.Visitor
@@ -74,13 +71,17 @@ class ToStringVisitor implements RouterFunctions.Visitor, RequestPredicates.Visi
 	}
 
 	@Override
+	public void attributes(Map<String, Object> attributes) {
+	}
+
+	@Override
 	public void unknown(RouterFunction<?> routerFunction) {
 		indent();
 		this.builder.append(routerFunction);
 	}
 
 	private void indent() {
-		for (int i=0; i < this.indent; i++) {
+		for (int i = 0; i < this.indent; i++) {
 			this.builder.append(' ');
 		}
 	}
@@ -96,37 +97,36 @@ class ToStringVisitor implements RouterFunctions.Visitor, RequestPredicates.Visi
 		else {
 			this.builder.append(methods);
 		}
-		infix();
 	}
 
 	@Override
 	public void path(String pattern) {
 		this.builder.append(pattern);
-		infix();
 	}
 
 	@Override
 	public void pathExtension(String extension) {
 		this.builder.append(String.format("*.%s", extension));
-		infix();
 	}
 
 	@Override
 	public void header(String name, String value) {
 		this.builder.append(String.format("%s: %s", name, value));
-		infix();
 	}
 
 	@Override
 	public void queryParam(String name, String value) {
 		this.builder.append(String.format("?%s == %s", name, value));
-		infix();
 	}
 
 	@Override
 	public void startAnd() {
 		this.builder.append('(');
-		this.infix = "&&";
+	}
+
+	@Override
+	public void and() {
+		this.builder.append(" && ");
 	}
 
 	@Override
@@ -137,7 +137,12 @@ class ToStringVisitor implements RouterFunctions.Visitor, RequestPredicates.Visi
 	@Override
 	public void startOr() {
 		this.builder.append('(');
-		this.infix = "||";
+	}
+
+	@Override
+	public void or() {
+		this.builder.append(" || ");
+
 	}
 
 	@Override
@@ -148,7 +153,6 @@ class ToStringVisitor implements RouterFunctions.Visitor, RequestPredicates.Visi
 	@Override
 	public void startNegate() {
 		this.builder.append("!(");
-
 	}
 
 	@Override
@@ -160,16 +164,6 @@ class ToStringVisitor implements RouterFunctions.Visitor, RequestPredicates.Visi
 	public void unknown(RequestPredicate predicate) {
 		this.builder.append(predicate);
 	}
-
-	private void infix() {
-		if (this.infix != null) {
-			this.builder.append(' ');
-			this.builder.append(this.infix);
-			this.builder.append(' ');
-			this.infix = null;
-		}
-	}
-
 
 	@Override
 	public String toString() {
