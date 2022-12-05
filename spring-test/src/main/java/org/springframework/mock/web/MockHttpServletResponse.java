@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2021 the original author or authors.
+ * Copyright 2002-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -51,9 +51,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.util.WebUtils;
 
 /**
- * Mock implementation of the {@link javax.servlet.http.HttpServletResponse} interface.
+ * Mock implementation of the {@link jakarta.servlet.http.HttpServletResponse} interface.
  *
- * <p>As of Spring Framework 5.0, this set of mocks is designed on a Servlet 4.0 baseline.
+ * <p>As of Spring 6.0, this set of mocks is designed on a Servlet 6.0 baseline.
  *
  * @author Juergen Hoeller
  * @author Rod Johnson
@@ -279,8 +279,11 @@ public class MockHttpServletResponse implements HttpServletResponse {
 	 * @see #setContentType(String)
 	 */
 	public String getContentAsString(Charset fallbackCharset) throws UnsupportedEncodingException {
-		String charsetName = (this.characterEncodingSet ? getCharacterEncoding() : fallbackCharset.name());
-		return this.content.toString(charsetName);
+		if (this.characterEncodingSet) {
+			return this.content.toString(getCharacterEncoding());
+		}
+
+		return this.content.toString(fallbackCharset);
 	}
 
 	@Override
@@ -383,7 +386,7 @@ public class MockHttpServletResponse implements HttpServletResponse {
 
 	@Override
 	public void setLocale(@Nullable Locale locale) {
-		// Although the Javadoc for javax.servlet.ServletResponse.setLocale(Locale) does not
+		// Although the Javadoc for jakarta.servlet.ServletResponse.setLocale(Locale) does not
 		// state how a null value for the supplied Locale should be handled, both Tomcat and
 		// Jetty simply ignore a null value. So we do the same here.
 		if (locale == null) {
@@ -410,6 +413,7 @@ public class MockHttpServletResponse implements HttpServletResponse {
 		doAddHeaderValue(HttpHeaders.SET_COOKIE, getCookieHeader(cookie), false);
 	}
 
+	@SuppressWarnings("removal")
 	private String getCookieHeader(Cookie cookie) {
 		StringBuilder buf = new StringBuilder();
 		buf.append(cookie.getName()).append('=').append(cookie.getValue() == null ? "" : cookie.getValue());
@@ -420,7 +424,7 @@ public class MockHttpServletResponse implements HttpServletResponse {
 			buf.append("; Domain=").append(cookie.getDomain());
 		}
 		int maxAge = cookie.getMaxAge();
-		ZonedDateTime expires = (cookie instanceof MockCookie ? ((MockCookie) cookie).getExpires() : null);
+		ZonedDateTime expires = (cookie instanceof MockCookie mockCookie ? mockCookie.getExpires() : null);
 		if (maxAge >= 0) {
 			buf.append("; Max-Age=").append(maxAge);
 			buf.append("; Expires=");
@@ -444,11 +448,13 @@ public class MockHttpServletResponse implements HttpServletResponse {
 		if (cookie.isHttpOnly()) {
 			buf.append("; HttpOnly");
 		}
-		if (cookie instanceof MockCookie) {
-			MockCookie mockCookie = (MockCookie) cookie;
+		if (cookie instanceof MockCookie mockCookie) {
 			if (StringUtils.hasText(mockCookie.getSameSite())) {
 				buf.append("; SameSite=").append(mockCookie.getSameSite());
 			}
+		}
+		if (StringUtils.hasText(cookie.getComment())) {
+			buf.append("; Comment=").append(cookie.getComment());
 		}
 		return buf.toString();
 	}
@@ -568,18 +574,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
 	}
 
 	@Override
-	@Deprecated
-	public String encodeUrl(String url) {
-		return encodeURL(url);
-	}
-
-	@Override
-	@Deprecated
-	public String encodeRedirectUrl(String url) {
-		return encodeRedirectURL(url);
-	}
-
-	@Override
 	public void sendError(int status, String errorMessage) throws IOException {
 		Assert.state(!isCommitted(), "Cannot set error status - response is already committed");
 		this.status = status;
@@ -690,7 +684,7 @@ public class MockHttpServletResponse implements HttpServletResponse {
 			return true;
 		}
 		else if (HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(name)) {
-			setContentLength(value instanceof Number ? ((Number) value).intValue() :
+			setContentLength(value instanceof Number number ? number.intValue() :
 					Integer.parseInt(value.toString()));
 			return true;
 		}
@@ -750,15 +744,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
 	public void setStatus(int status) {
 		if (!this.isCommitted()) {
 			this.status = status;
-		}
-	}
-
-	@Override
-	@Deprecated
-	public void setStatus(int status, String errorMessage) {
-		if (!this.isCommitted()) {
-			this.status = status;
-			this.errorMessage = errorMessage;
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2021 the original author or authors.
+ * Copyright 2002-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,15 +46,20 @@ class SoftAssertionTests {
 	}
 
 	@Test
-	void expectAllWithMultipleFailures() throws Exception {
-		assertThatExceptionOfType(AssertionError.class).isThrownBy(() ->
-			this.webTestClient.get().uri("/test").exchange()
-				.expectAll(
-					responseSpec -> responseSpec.expectStatus().isBadRequest(),
-					responseSpec -> responseSpec.expectStatus().isOk(),
-					responseSpec -> responseSpec.expectBody(String.class).isEqualTo("bogus")
+	void expectAllWithMultipleFailures() {
+		assertThatExceptionOfType(AssertionError.class)
+				.isThrownBy(() ->
+						this.webTestClient.get().uri("/test").exchange()
+								.expectAll(
+										responseSpec -> responseSpec.expectStatus().isBadRequest(),
+										responseSpec -> responseSpec.expectStatus().isOk(),
+										responseSpec -> responseSpec.expectBody(String.class).isEqualTo("bogus")
+								)
 				)
-		).withMessage("Multiple Exceptions (2):\nStatus expected:<400 BAD_REQUEST> but was:<200 OK>\nResponse body expected:<bogus> but was:<hello>");
+				.withMessage("""
+						Multiple Exceptions (2):
+						Status expected:<400 BAD_REQUEST> but was:<200 OK>
+						Response body expected:<bogus> but was:<hello>""");
 	}
 
 

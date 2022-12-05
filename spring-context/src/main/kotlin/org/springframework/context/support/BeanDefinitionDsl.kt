@@ -16,6 +16,7 @@
 
 package org.springframework.context.support
 
+import org.springframework.aot.AotDetector
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.config.BeanDefinitionCustomizer
@@ -178,7 +179,7 @@ open class BeanDefinitionDsl internal constructor (private val init: BeanDefinit
 									  role: Role? = null) {
 
 		val customizer = BeanDefinitionCustomizer { bd ->
-			scope?.let { bd.scope = scope.name.toLowerCase() }
+			scope?.let { bd.scope = scope.name.lowercase() }
 			isLazyInit?.let { bd.isLazyInit = isLazyInit }
 			isPrimary?.let { bd.isPrimary = isPrimary }
 			isAutowireCandidate?.let { bd.isAutowireCandidate = isAutowireCandidate }
@@ -221,7 +222,7 @@ open class BeanDefinitionDsl internal constructor (private val init: BeanDefinit
 									  crossinline function: BeanSupplierContext.() -> T) {
 
 		val customizer = BeanDefinitionCustomizer { bd ->
-			scope?.let { bd.scope = scope.name.toLowerCase() }
+			scope?.let { bd.scope = scope.name.lowercase() }
 			isLazyInit?.let { bd.isLazyInit = isLazyInit }
 			isPrimary?.let { bd.isPrimary = isPrimary }
 			isAutowireCandidate?.let { bd.isAutowireCandidate = isAutowireCandidate }
@@ -1145,6 +1146,9 @@ open class BeanDefinitionDsl internal constructor (private val init: BeanDefinit
 	 * @param context The `ApplicationContext` to use for registering the beans
 	 */
 	override fun initialize(context: GenericApplicationContext) {
+		if (AotDetector.useGeneratedArtifacts()) {
+			return
+		}
 		this.context = context
 		init()
 		for (child in children) {
