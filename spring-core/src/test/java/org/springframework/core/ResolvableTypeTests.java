@@ -596,7 +596,7 @@ class ResolvableTypeTests {
 		assertThat(type.resolve()).isEqualTo(List[][][].class);
 		assertThat(type.getComponentType().resolve()).isEqualTo(List[][].class);
 	}
-
+	
 	@Test
 	void resolveGenericArrayFromGeneric() throws Exception {
 		ResolvableType type = ResolvableType.forField(Fields.class.getField("stringArrayList"));

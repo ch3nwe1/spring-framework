@@ -85,6 +85,9 @@ abstract class AbstractAspectJAdvisorFactoryTests {
 	void rejectsPerCflowAspect() {
 		assertThatExceptionOfType(AopConfigException.class).isThrownBy(() ->
 				getFixture().getAdvisors(
+						/*
+							在创建AspectMetaData对象时检查检查其perClause类型，不支持perclfow 来源于MetadataAwareAspectInstanceFactory#getMetaData
+						 */
 						new SingletonMetadataAwareAspectInstanceFactory(new PerCflowAspect(), "someBean")))
 			.withMessageContaining("PERCFLOW");
 	}
@@ -93,6 +96,9 @@ abstract class AbstractAspectJAdvisorFactoryTests {
 	void rejectsPerCflowBelowAspect() {
 		assertThatExceptionOfType(AopConfigException.class).isThrownBy(() ->
 					getFixture().getAdvisors(
+							/*
+								在创建AspectMetaData对象时检查检查其perClause类型，不支持perclfow
+						 	*/
 							new SingletonMetadataAwareAspectInstanceFactory(new PerCflowBelowAspect(), "someBean")))
 			.withMessageContaining("PERCFLOWBELOW");
 	}

@@ -33,6 +33,16 @@ import org.aopalliance.aop.Advice;
  * @author Rod Johnson
  * @author Juergen Hoeller
  */
+
+/**
+ *
+ * Advisor接口是增强目标对象的拦截器存储容器
+ *
+ * Advisor实现类分为两类：
+ * 1.PointcutAdvisor
+ * 		Pointcut对象包含两个主要功能，ClassFilter, MethodMatcher
+ * 2.IntroductionAdvisor
+ */
 public interface Advisor {
 
 	/**

@@ -85,11 +85,11 @@ import org.springframework.util.ReflectionUtils;
 class CglibAopProxy implements AopProxy, Serializable {
 
 	// Constants for CGLIB callback array indices
-	private static final int AOP_PROXY = 0;
-	private static final int INVOKE_TARGET = 1;
-	private static final int NO_OVERRIDE = 2;
-	private static final int DISPATCH_TARGET = 3;
-	private static final int DISPATCH_ADVISED = 4;
+	private static final int AOP_PROXY = 0;  // aopInterceptor
+	private static final int INVOKE_TARGET = 1; // targetInterceptor
+	private static final int NO_OVERRIDE = 2; // NoOp new SerializableNoOp(),
+	private static final int DISPATCH_TARGET = 3; // targetDispatcher target懒加载
+	private static final int DISPATCH_ADVISED = 4; // advised 懒加载
 	private static final int INVOKE_EQUALS = 5;
 	private static final int INVOKE_HASHCODE = 6;
 
@@ -113,7 +113,7 @@ class CglibAopProxy implements AopProxy, Serializable {
 	/** Dispatcher used for methods on Advised. */
 	private final transient AdvisedDispatcher advisedDispatcher;
 
-	private transient Map<Method, Integer> fixedInterceptorMap = Collections.emptyMap();
+	private transient Map<Method, Integer> fixedInterceptorMap = Collections.emptyMap(); // 方法对应callback索引
 
 	private transient int fixedInterceptorOffset;
 
@@ -163,9 +163,11 @@ class CglibAopProxy implements AopProxy, Serializable {
 		}
 
 		try {
+			// 获取代理的目标类
 			Class<?> rootClass = this.advised.getTargetClass();
 			Assert.state(rootClass != null, "Target class must be available for creating a CGLIB proxy");
 
+			// 如果目标类已经是CGLib对象，则添加实现的接口
 			Class<?> proxySuperClass = rootClass;
 			if (rootClass.getName().contains(ClassUtils.CGLIB_CLASS_SEPARATOR)) {
 				proxySuperClass = rootClass.getSuperclass();
@@ -313,7 +315,8 @@ class CglibAopProxy implements AopProxy, Serializable {
 				aopInterceptor,  // for normal advice
 				targetInterceptor,  // invoke target without considering advice, if optimized
 				new SerializableNoOp(),  // no override for methods mapped to this
-				targetDispatcher, this.advisedDispatcher,
+				targetDispatcher,
+				this.advisedDispatcher,
 				new EqualsInterceptor(this.advised),
 				new HashCodeInterceptor(this.advised)
 		};
@@ -842,7 +845,7 @@ class CglibAopProxy implements AopProxy, Serializable {
 		 */
 		@Override
 		public int accept(Method method) {
-			if (AopUtils.isFinalizeMethod(method)) {
+			if (AopUtils.isFinalizeMethod(method)) { // 如果是对象的finalize方法。不重写
 				logger.trace("Found finalize() method - using NO_OVERRIDE");
 				return NO_OVERRIDE;
 			}
@@ -851,8 +854,10 @@ class CglibAopProxy implements AopProxy, Serializable {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Method is declared on Advised interface: " + method);
 				}
+				// 分发给advised对象处理
 				return DISPATCH_ADVISED;
 			}
+			//  调用equals
 			// We must always proxy equals, to direct calls to this.
 			if (AopUtils.isEqualsMethod(method)) {
 				if (logger.isTraceEnabled()) {
@@ -860,6 +865,7 @@ class CglibAopProxy implements AopProxy, Serializable {
 				}
 				return INVOKE_EQUALS;
 			}
+			// 调用hashcode方法
 			// We must always calculate hashCode based on the proxy.
 			if (AopUtils.isHashCodeMethod(method)) {
 				if (logger.isTraceEnabled()) {

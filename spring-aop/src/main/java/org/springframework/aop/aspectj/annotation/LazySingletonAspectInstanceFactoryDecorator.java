@@ -23,7 +23,7 @@ import org.springframework.util.Assert;
 
 /**
  * Decorator to cause a {@link MetadataAwareAspectInstanceFactory} to instantiate only once.
- *
+ * 支持在并发条件下创建单例
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @since 2.0

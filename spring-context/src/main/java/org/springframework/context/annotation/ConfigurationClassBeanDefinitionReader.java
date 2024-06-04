@@ -295,7 +295,7 @@ class ConfigurationClassBeanDefinitionReader {
 		this.registry.registerBeanDefinition(beanName, beanDefToRegister);
 	}
 
-	protected boolean isOverriddenByExistingDefinition(BeanMethod beanMethod, String beanName) {
+	protected boolean isOverriddenByExistingDefinition(BeanMethod beanMethod, String beanName) { // 是否保留系统中存在的BeanDefinition
 		if (!this.registry.containsBeanDefinition(beanName)) {
 			return false;
 		}
@@ -305,6 +305,7 @@ class ConfigurationClassBeanDefinitionReader {
 		// -> allow the current bean method to override, since both are at second-pass level.
 		// However, if the bean method is an overloaded case on the same configuration class,
 		// preserve the existing bean definition.
+		//
 		if (existingBeanDef instanceof ConfigurationClassBeanDefinition) {
 			ConfigurationClassBeanDefinition ccbd = (ConfigurationClassBeanDefinition) existingBeanDef;
 			if (ccbd.getMetadata().getClassName().equals(

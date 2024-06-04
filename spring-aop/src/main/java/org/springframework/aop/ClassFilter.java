@@ -32,6 +32,14 @@ package org.springframework.aop;
  * @see Pointcut
  * @see MethodMatcher
  */
+
+/*
+	ClassFilter 用于判断传入的Class是否匹配
+	1. AnnotationClassFilter 判断该类是否有指定类型的注解。该类有一个属性checkInherited，是否检查父类以及实现的接口有该注解
+	2. TypePatternClassFilter 使用aspectJ表达式判断, ???
+	3. RootClassFilter: 判断传入的class是否是指定类的子类
+	4. TrueClassFilter: 固定返回true，代表所有类都符合条件
+ */
 @FunctionalInterface
 public interface ClassFilter {
 

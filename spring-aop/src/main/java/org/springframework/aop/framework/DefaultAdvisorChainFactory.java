@@ -45,6 +45,7 @@ import org.springframework.lang.Nullable;
  * @since 2.0.3
  */
 @SuppressWarnings("serial")
+// 获取拦截链
 public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializable {
 
 	@Override

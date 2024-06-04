@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
  */
 public interface Joinpoint {
 
+	// 继续下一个拦截器
 	/**
 	 * Proceed to the next interceptor in the chain.
 	 * <p>The implementation and the semantics of this method depends

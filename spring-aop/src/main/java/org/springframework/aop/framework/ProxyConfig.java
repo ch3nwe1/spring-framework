@@ -34,10 +34,12 @@ public class ProxyConfig implements Serializable {
 	private static final long serialVersionUID = -8409359707199703185L;
 
 
+	// 代理类或者接口
 	private boolean proxyTargetClass = false;
 
 	private boolean optimize = false;
 
+	// 模糊的
 	boolean opaque = false;
 
 	boolean exposeProxy = false;

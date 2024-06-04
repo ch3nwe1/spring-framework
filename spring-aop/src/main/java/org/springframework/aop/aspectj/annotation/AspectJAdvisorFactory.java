@@ -36,6 +36,14 @@ import org.springframework.lang.Nullable;
  * @see AspectMetadata
  * @see org.aspectj.lang.reflect.AjTypeSystem
  */
+/*
+	用于创建Advisor工厂
+	1. 判断class是否是Aspect切面
+	2. 验证aspectClass
+	3. 获取Advisor集合
+	4. 创建Advisor对象
+	5. 创建Advice对象，即拦截器
+ */
 public interface AspectJAdvisorFactory {
 
 	/**

@@ -75,6 +75,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	 * is that aspects written in the code-style (AspectJ language) also have the annotation present
 	 * when compiled by ajc with the -1.5 flag, yet they cannot be consumed by Spring AOP.
 	 */
+	// 有Aspect注解并且不是aspectj编译的类
 	@Override
 	public boolean isAspect(Class<?> clazz) {
 		return (hasAspectAnnotation(clazz) && !compiledByAjc(clazz));
@@ -100,6 +101,11 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 		return false;
 	}
 
+	/*
+		1. 如果父类添加了Aspect注解，并且不能是抽象类
+		2. 判断自身是否注解了Aspect
+		3. 不支持 percflow 和 percflowbelow
+	 */
 	@Override
 	public void validate(Class<?> aspectClass) throws AopConfigException {
 		// If the parent has the annotation and isn't abstract it's an error

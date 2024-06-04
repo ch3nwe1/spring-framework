@@ -427,7 +427,6 @@ class ConfigurationClassPostProcessorTests {
 		beanFactory.registerBeanDefinition("config3", new RootBeanDefinition(SingletonBeanConfig.class));
 		ConfigurationClassPostProcessor pp = new ConfigurationClassPostProcessor();
 		pp.postProcessBeanFactory(beanFactory);
-
 		assertThatExceptionOfType(BeanCreationException.class).isThrownBy(() ->
 				beanFactory.getBean(Bar.class))
 			.withMessageContaining("OverridingSingletonBeanConfig.foo")
@@ -481,7 +480,7 @@ class ConfigurationClassPostProcessorTests {
 	}
 
 	@Test
-	void processingAllowedOnlyOncePerProcessorRegistryPair() {
+	void processingAllowedOnlyOncePerProcessorRegistryPair() { // ConfigurationClassPostProcessor仅允许一次调用
 		DefaultListableBeanFactory bf1 = new DefaultListableBeanFactory();
 		DefaultListableBeanFactory bf2 = new DefaultListableBeanFactory();
 		ConfigurationClassPostProcessor pp = new ConfigurationClassPostProcessor();
